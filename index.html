@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 면접 전문가 분석</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-blue: #1a237e;
+            --main-blue: #283593;
+            --accent: #ff5252;
+            --bg: #f4f7f9;
+        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: #fff; width: 100%; max-width: 600px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 8px solid var(--deep-blue); }
+        h2 { color: var(--deep-blue); text-align: center; margin-top: 0; font-size: 24px; letter-spacing: -1px; }
+        .desc { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; }
+        
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; font-size: 15px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
+        input:focus, textarea:focus { outline: none; border-color: var(--main-blue); background: #fff; }
+        textarea { height: 80px; resize: none; }
+        
+        button { width: 100%; padding: 16px; background: var(--deep-blue); color: white; border: none; border-radius: 4px; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: var(--main-blue); }
+        button:disabled { background: #999; cursor: not-allowed; }
+
+        #resultArea { margin-top: 30px; padding: 25px; background: #f8f9fa; border-left: 4px solid var(--accent); display: none; }
+        .result-title { font-weight: bold; color: var(--accent); margin-bottom: 15px; display: flex; align-items: center; }
+        .result-content { font-size: 15px; line-height: 1.8; color: #2c3e50; white-space: pre-wrap; }
+        
+        .loading-text { text-align: center; color: var(--main-blue); font-weight: bold; display: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>면접 전문가 AI 질문 분석 ⚖️</h2>
+    <p class="desc">가고 싶은 기업과 직무 정보를 입력하십시오. <br>냉철한 분석가가 당신의 허점을 파고드는 질문을 생성합니다.</p>
+    
+    <div class="input-group">
+        <label>회사명</label>
+        <input type="text" id="company" placeholder="예: 구글 코리아">
+    </div>
+
+    <div class="input-group">
+        <label>기업 인재상 / 핵심 가치</label>
+        <textarea id="talent" placeholder="예: 도전정신, 고객중심, 데이터 기반 사고 등"></textarea>
+    </div>
+
+    <div class="input-group">
+        <label>희망 직무</label>
+        <input type="text" id="job" placeholder="예: 교육 콘텐츠 기획자">
+    </div>
+
+    <button id="analyzeBtn" onclick="startAnalysis()">데이터 분석 및 질문 추출</button>
+    <div id="loading" class="loading-text">기업 데이터를 정밀 분석 중입니다...</div>
+
+    <div id="resultArea">
+        <div class="result-title">⚠️ 냉철한 면접관의 예상 질문 10선</div>
+        <div id="questions" class="result-content"></div>
+    </div>
+</div>
+
+<script>
+    function startAnalysis() {
+        const company = document.getElementById('company').value;
+        const talent = document.getElementById('talent').value;
+        const job = document.getElementById('job').value;
+        const btn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('resultArea');
+        const questionsDiv = document.getElementById('questions');
+
+        if (!company || !talent || !job) {
+            alert("모든 항목을 입력해야 분석이 가능합니다.");
+            return;
+        }
+
+        btn.disabled = true;
+        loading.style.display = "block";
+        resultArea.style.display = "none";
+
+        google.script.run
+            .withSuccessHandler(function(response) {
+                btn.disabled = false;
+                loading.style.display = "none";
+                resultArea.style.display = "block";
+                questionsDiv.innerText = response;
+            })
+            .withFailureHandler(function() {
+                alert("분석 중 오류가 발생했습니다.");
+                btn.disabled = false;
+                loading.style.display = "none";
+            })
+            .generateInterviewQuestions(company, talent, job);
+    }
+</script>
+
+</body>
+</html>
